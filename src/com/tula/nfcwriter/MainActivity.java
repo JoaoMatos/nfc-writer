@@ -8,6 +8,7 @@ import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.support.v13.app.FragmentPagerAdapter;
+import android.nfc.NfcAdapter;
 import android.os.Bundle;
 import android.support.v4.view.ViewPager;
 import android.view.LayoutInflater;
@@ -16,6 +17,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
 public class MainActivity extends Activity implements ActionBar.TabListener {
 
@@ -32,12 +34,17 @@ public class MainActivity extends Activity implements ActionBar.TabListener {
 	 * The {@link ViewPager} that will host the section contents.
 	 */
 	ViewPager mViewPager;
+	
+	private static NfcAdapter mNfcAdapter;
+	private static TextView mTextView;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
 
+		//mTextView = (TextView) findViewById(R.id.textView_explanation);
+		
 		// Set up the action bar.
 		final ActionBar actionBar = getActionBar();
 		actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
@@ -71,6 +78,15 @@ public class MainActivity extends Activity implements ActionBar.TabListener {
 					.setText(mSectionsPagerAdapter.getPageTitle(i))
 					.setTabListener(this));
 		}
+		
+		mNfcAdapter = NfcAdapter.getDefaultAdapter(this);
+		
+		if (mNfcAdapter == null) {
+            // Stop here, we definitely need NFC
+            Toast.makeText(this, "This device doesn't support NFC.", Toast.LENGTH_LONG).show();
+            finish();
+            return;
+        }		
 	}
 
 	@Override
@@ -126,6 +142,7 @@ public class MainActivity extends Activity implements ActionBar.TabListener {
 			// getItem is called to instantiate the fragment for the given page.
 			// Return a PlaceholderFragment (defined as a static inner class
 			// below).
+			
 			return PlaceholderFragment.newInstance(position + 1);
 		}
 
@@ -172,6 +189,7 @@ public class MainActivity extends Activity implements ActionBar.TabListener {
 		}
 
 		public PlaceholderFragment() {
+			
 		}
 
 		@Override
@@ -179,12 +197,20 @@ public class MainActivity extends Activity implements ActionBar.TabListener {
 				Bundle savedInstanceState) {
 			View rootView = inflater.inflate(R.layout.fragment_main, container,
 					false);
-			TextView textView = (TextView) rootView
+			
+			mTextView = (TextView) rootView.findViewById(R.id.textView_explanation);
+	        if (!mNfcAdapter.isEnabled()) {
+	            mTextView.setText("NFC is disabled.");
+	        } else {
+	            mTextView.setText(R.string.explanation);
+	        }
+			
+			/*TextView textView = (TextView) rootView
 					.findViewById(R.id.section_label);
 			textView.setText(Integer.toString(getArguments().getInt(
-					ARG_SECTION_NUMBER)));
+					ARG_SECTION_NUMBER)));*/
+	        
 			return rootView;
 		}
 	}
-
 }
